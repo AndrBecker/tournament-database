@@ -1,11 +1,17 @@
 -- Table definitions for the tournament project.
 --
--- Put your SQL 'create table' statements in this file; also 'create view'
--- statements if you choose to use it.
---
--- You can write comments in this file by starting them with two dashes, like
--- these lines here.
+-- The tournament database with its schema is created
+-- by executing this file in the psql console with command
+-- '\i tournament.sql'
 
+
+-- Creation of tournament database and connection to the database --
+
+drop database if exists tournament;
+
+create database tournament;
+
+\c tournament
 
 
 -- Creation of tables players and matches --
@@ -20,7 +26,8 @@ create table players ( id serial not null,
 
 create table matches (  id serial not null,
 				winner int references players(id),
-				loser int references players(id));
+				loser int references players(id),
+				primary key (id));
 
 
 
