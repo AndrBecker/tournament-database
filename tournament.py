@@ -2,9 +2,19 @@
 #
 # tournament.py -- implementation of a Swiss-system tournament
 #
+# For database access adapt the access parameters in the call of
+# function 'psycopg2.connect' (user, password, host, port) in
+# function 'connect' to the local setup.
+
+# Import of required python modules.
 
 import psycopg2
 
+
+# Establishes a connection to postgresql database 'tournament'
+# and returns the connection together with a cursor on the connection.
+# The database access parameters might have to be edited for
+# adaptation to the local setup (see notice above).
 
 def connect():
     try:
@@ -17,6 +27,9 @@ def connect():
         print("Error: no connection to the database")
 
 
+# Deletes all entries in database table 'matches' without
+# doing a table scan.
+
 def deleteMatches():
     """Remove all the match records from the database."""
     db, cursor = connect()
@@ -25,6 +38,14 @@ def deleteMatches():
     db.commit()
     db.close()
 
+
+# Deletes all entries in the tables 'matches' and 'players'.
+# Entries in table 'matches' depend on entries in table
+# 'players' by foreign key references so that the entries
+# in table 'matches' have to be deleted before the entries
+# in table 'players' they refer to are deleted. This order
+# of deletion of dependent data is ensured by using the
+# keyword 'CASCADE'.
 
 def deletePlayers():
     """Remove all the player records from the database."""
@@ -35,6 +56,9 @@ def deletePlayers():
     db.close()
 
 
+# Returns the number of data records in table 'players' by
+# aggregating all entries with the count function.
+
 def countPlayers():
     """Returns the number of players currently registered."""
     db, cursor = connect()
@@ -44,6 +68,10 @@ def countPlayers():
     db.close()
     return nr_players
 
+
+# Inserts a new data record in table 'players'. The unique serial
+# id (primary key) is generated automatically by a sequence
+# in the database.
 
 def registerPlayer(name):
     """Adds a player to the tournament database.
@@ -61,6 +89,12 @@ def registerPlayer(name):
     db.commit()
     db.close()
 
+
+# Returns a list containing for each player a tuple made up of the
+# player's id, name, number of wins and number of matches (= wins or
+# losses). The function executes the database view 'player_standings'
+# in the database and copies a tuple for each resulting data
+# record into the result list.
 
 def playerStandings():
     """Returns a list of the players and their win records, sorted by wins.
@@ -87,6 +121,10 @@ def playerStandings():
     return list
 
 
+# Inserts a new data record into the table 'matches'.
+# The parameters 'winner' and 'loser' must be set to
+# ids of players registered in table 'players'.
+
 def reportMatch(winner, loser):
     """Records the outcome of a single match between two players.
 
@@ -101,6 +139,15 @@ def reportMatch(winner, loser):
     db.commit()
     db.close()
 
+
+# Returns a list of tuples each representing a pair of players which
+# according to their player standing should play against each other in
+# the next round in a swiss-style tournament. This is done by
+# coupling players in the list returned by function 'playerStandings'.
+# Each player in an even position in the list (beginning with position 0)
+# is coupled with the following player in an uneven position in the list.
+# An empty list is returned and an error message printed on the console
+# in case there is an odd number of players in the tournament.
 
 def swissPairings():
     """Returns a list of pairs of players for the next round of a match.
